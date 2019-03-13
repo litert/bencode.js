@@ -1,6 +1,6 @@
 {
   "name": "@litert/bencode",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A bencode decode/encode library based on Node.js.",
   "main": "./libs/index.js",
   "scripts": {

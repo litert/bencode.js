@@ -64,7 +64,7 @@ class BEncoder implements C.IEncoder {
 
         let v = 2;
 
-        while (ctx.buffer.length * v - ctx.cursor >= expectLength) {
+        while (ctx.buffer.length * v - ctx.cursor < expectLength) {
 
             v <<= 1;
         }
