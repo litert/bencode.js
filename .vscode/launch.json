@@ -7,12 +7,21 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "[LiteRT/Bencode.js] Sample 01 - Server Side",
-            "program": "${workspaceFolder}/src/samples/test.ts",
+            "name": "[LiteRT/Bencode.js] Sample 01 - Encoder & Decoder",
+            "program": "${workspaceFolder}/src/examples/01-Encoder.ts",
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/samples/*.js",
-                "${workspaceFolder}/libs/*.js"
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "[LiteRT/Bencode.js] Sample 02 - Decode Torrent File",
+            "program": "${workspaceFolder}/src/examples/02-Decode-File.ts",
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
             ]
         }
     ]

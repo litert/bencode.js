@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Angus.Fenying <fenying@litert.org>
+ * Copyright 2021 Angus.Fenying <fenying@litert.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
  */
 
 // tslint:disable: no-console
-import * as libBEncode from "../libs";
-import * as $FS from "fs";
+import * as $BEncode from '../lib';
+import * as $FS from 'fs';
 
-const be = libBEncode.createBEncoder();
+const be = $BEncode.createBEncoder();
 
 function buffer4Base64(k: string, v: any): any {
 
-    if (typeof v === "object" && "data" in v && v.type === "Buffer") {
+    if (typeof v === 'object' && 'data' in v && v.type === 'Buffer') {
 
-        return Buffer.from(v.data).toString("base64");
+        return Buffer.from(v.data).toString('base64');
     }
 
     return v;

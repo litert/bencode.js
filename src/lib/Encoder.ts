@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Angus.Fenying <fenying@litert.org>
+ * Copyright 2021 Angus.Fenying <fenying@litert.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import * as C from "./common";
-import * as E from "./errors";
+import * as C from './Common';
+import * as E from './Errors';
 
 interface IContext {
 
@@ -79,30 +79,30 @@ class BEncoder implements C.IEncoder {
     private _encode(ctx: IContext, data: C.ElementType): void {
 
         switch (typeof data) {
-        case "string":
-
-            return this._encodeString(ctx, data);
-
-        case "number":
-
-            return this._encodeNumber(ctx, data);
-
-        case "object":
-
-            if (data instanceof Buffer) {
+            case 'string':
 
                 return this._encodeString(ctx, data);
-            }
-            else if (Array.isArray(data)) {
 
-                return this._encodeList(ctx, data);
-            }
+            case 'number':
 
-            return this._encodeDict(ctx, data);
+                return this._encodeNumber(ctx, data);
 
-        default:
+            case 'object':
 
-        throw new E.E_UNSUPPORTED_DATA_TYPE({ "metadata": { data } });
+                if (data instanceof Buffer) {
+
+                    return this._encodeString(ctx, data);
+                }
+                else if (Array.isArray(data)) {
+
+                    return this._encodeList(ctx, data);
+                }
+
+                return this._encodeDict(ctx, data);
+
+            default:
+
+                throw new E.E_UNSUPPORTED_DATA_TYPE({ data });
         }
     }
 
@@ -110,7 +110,7 @@ class BEncoder implements C.IEncoder {
 
         if (!Number.isInteger(num)) {
 
-            throw new E.E_INVALID_INTEGER({ "metadata": { "integer": num } });
+            throw new E.E_INVALID_INTEGER({ 'integer': num });
         }
 
         const ns = num.toString();
@@ -190,8 +190,8 @@ class BEncoder implements C.IEncoder {
 
         const context: IContext = {
 
-            "buffer": data instanceof Buffer ? data : Buffer.from(data),
-            "cursor": 0,
+            'buffer': data instanceof Buffer ? data : Buffer.from(data),
+            'cursor': 0,
             autoString
         };
 
@@ -201,21 +201,21 @@ class BEncoder implements C.IEncoder {
     private _decode(ctx: IContext): C.ElementType {
 
         switch (ctx.buffer[ctx.cursor]) {
-        case BYTE_LOWER_D:
+            case BYTE_LOWER_D:
 
-            return this._decodeDict(ctx);
+                return this._decodeDict(ctx);
 
-        case BYTE_LOWER_I:
+            case BYTE_LOWER_I:
 
-            return this._decodeInteger(ctx);
+                return this._decodeInteger(ctx);
 
-        case BYTE_LOWER_L:
+            case BYTE_LOWER_L:
 
-            return this._decodeList(ctx);
+                return this._decodeList(ctx);
 
-        default:
+            default:
 
-            return this._decodeString(ctx);
+                return this._decodeString(ctx);
         }
     }
 
@@ -225,9 +225,7 @@ class BEncoder implements C.IEncoder {
 
         if (endPos === -1) {
 
-            throw new E.E_UNEXPECTED_ENDING({
-                "metadata": { "position": ctx.cursor }
-            });
+            throw new E.E_UNEXPECTED_ENDING({ 'position': ctx.cursor });
         }
 
         let i = ctx.cursor + 1;
@@ -242,9 +240,7 @@ class BEncoder implements C.IEncoder {
 
         if (i === endPos) {
 
-            throw new E.E_INVALID_INTEGER({
-                "metadata": { "position": ctx.cursor }
-            });
+            throw new E.E_INVALID_INTEGER({ 'position': ctx.cursor });
         }
 
         for (; i < endPos; i++) {
@@ -253,9 +249,7 @@ class BEncoder implements C.IEncoder {
 
             if (b < BYTE_0 || b > BYTE_9) {
 
-                throw new E.E_INVALID_INTEGER({
-                    "metadata": { "position": i }
-                });
+                throw new E.E_INVALID_INTEGER({ 'position': i });
             }
 
             val = val * 10 + b - BYTE_0;
@@ -276,9 +270,7 @@ class BEncoder implements C.IEncoder {
 
             if (ctx.buffer[ctx.cursor] === undefined) {
 
-                throw new E.E_UNEXPECTED_ENDING({
-                    "metadata": { "position": ctx.cursor }
-                });
+                throw new E.E_UNEXPECTED_ENDING({ 'position': ctx.cursor });
             }
 
             if (ctx.buffer[ctx.cursor] === BYTE_LOWER_E) {
@@ -302,9 +294,7 @@ class BEncoder implements C.IEncoder {
 
             if (ctx.buffer[ctx.cursor] === undefined) {
 
-                throw new E.E_UNEXPECTED_ENDING({
-                    "metadata": { "position": ctx.cursor }
-                });
+                throw new E.E_UNEXPECTED_ENDING({ 'position': ctx.cursor });
             }
 
             if (ctx.buffer[ctx.cursor] === BYTE_LOWER_E) {
@@ -327,9 +317,7 @@ class BEncoder implements C.IEncoder {
 
         if (ctx.buffer[ctx.cursor] < BYTE_0 || ctx.buffer[ctx.cursor] > BYTE_9) {
 
-            throw new E.E_INVALID_STRING_LENGTH({
-                "metadata": { "position": i }
-            });
+            throw new E.E_INVALID_STRING_LENGTH({ 'position': i });
         }
 
         while (1) {
@@ -338,9 +326,7 @@ class BEncoder implements C.IEncoder {
 
             if (b === undefined) {
 
-                throw new E.E_UNEXPECTED_ENDING({
-                    "metadata": { "position": i }
-                });
+                throw new E.E_UNEXPECTED_ENDING({ 'position': i });
             }
 
             if (b === BYTE_COLON) {
@@ -351,9 +337,7 @@ class BEncoder implements C.IEncoder {
 
             if (b < BYTE_0 || b > BYTE_9) {
 
-                throw new E.E_INVALID_STRING_LENGTH({
-                    "metadata": { "position": i }
-                });
+                throw new E.E_INVALID_STRING_LENGTH({ 'position': i });
             }
 
             len = len * 10 + b - BYTE_0;
@@ -367,16 +351,14 @@ class BEncoder implements C.IEncoder {
 
             if (ctx.buffer.length - ctx.cursor < len) {
 
-                throw new E.E_UNEXPECTED_ENDING({
-                    "metadata": { "position": i }
-                });
+                throw new E.E_UNEXPECTED_ENDING({ 'position': i });
             }
 
             ret = ctx.buffer.slice(ctx.cursor, ctx.cursor + len);
 
             if (ctx.autoString) {
 
-                const t = ret.toString("utf8");
+                const t = ret.toString('utf8');
 
                 if (Buffer.from(t).length === ret.length) {
 

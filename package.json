@@ -1,16 +1,17 @@
 {
   "name": "@litert/bencode",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A bencode decode/encode library based on Node.js.",
   "main": "./libs/index.js",
   "scripts": {
-    "prepare": "npm run rebuild",
+    "prepublishOnly": "npm run rebuild",
     "build": "echo Using TypeScript && tsc -v && tsc -p .",
     "build-watch": "echo Using TypeScript && tsc -v && tsc -w -p .",
     "rebuild": "npm run clean && npm run lint && npm run build",
-    "test": "echo See directory src/samples",
-    "clean": "rm -rf libs samples",
-    "lint": "tslint -p . -c tslint.json"
+    "test": "echo See directory src/examples",
+    "clean": "rm -rf lib test examples",
+    "typecheck": "tsc -p . --noEmit",
+    "lint": "eslint --ext ts src"
   },
   "keywords": [
     "litert",
@@ -30,14 +31,20 @@
   "homepage": "https://github.com/litert/bencode.js#readme",
   "types": "./libs/index.d.ts",
   "typings": "./libs/index.d.ts",
-  "dependencies": {
-    "@litert/core": "^1.0.1"
-  },
   "devDependencies": {
-    "@types/node": "^10.12.2",
-    "typescript": "^3.1.4"
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
+    "@types/node": "^15.12.2",
+    "@typescript-eslint/eslint-plugin": "^4.27.0",
+    "@typescript-eslint/parser": "^4.27.0",
+    "eslint": "^7.28.0",
+    "husky": "^6.0.0",
+    "typescript": "^4.3.3"
   },
   "engines": {
     "node": ">=10.0.0"
+  },
+  "dependencies": {
+    "@litert/exception": "^1.1.1"
   }
 }
