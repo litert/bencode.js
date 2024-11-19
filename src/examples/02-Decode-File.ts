@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Angus.Fenying <fenying@litert.org>
+ * Copyright 2024 Angus.Fenying <fenying@litert.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 
 // tslint:disable: no-console
-import * as $BEncode from '../lib';
-import * as $FS from 'fs';
+import * as LibBencode from '../lib';
+import * as NodeFS from 'node:fs';
 
-const be = $BEncode.createBEncoder();
+const dec = new LibBencode.BencodeDecoder();
+const enc = new LibBencode.BencodeEncoder();
 
 function buffer4Base64(k: string, v: any): any {
 
@@ -30,9 +31,9 @@ function buffer4Base64(k: string, v: any): any {
     return v;
 }
 
-let torrentFile = be.decode(
-    $FS.readFileSync(`${__dirname}/../test-data/CentOS-7-x86_64-DVD-1611.torrent`),
-    true
-);
+const sample = NodeFS.readFileSync(`${__dirname}/../test-data/CentOS-7-x86_64-DVD-1611.torrent`);
+let torrentFile = dec.decode(sample);
 
 console.log(JSON.stringify(torrentFile, buffer4Base64, 2));
+
+console.log(enc.encode(torrentFile).equals(sample));

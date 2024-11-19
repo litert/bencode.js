@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-export type * from './Common';
-export * from './Errors';
-export * from './Encoder';
-export * from './Decoder';
+export enum ECharCodes {
+
+    COLON = 58,      // Char code of ':'
+    NEG = 45,        // Char code of '-'
+    DIGIT_0 = 48,    // Char code of '0'
+    DIGIT_9 = 58,    // Char code of '9'
+    LOWER_D = 100,   // Char code of 'd'
+    LOWER_E = 101,   // Char code of 'e'
+    LOWER_I = 105,   // Char code of 'i'
+    LOWER_L = 108    // Char code of 'l'
+}

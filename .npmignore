@@ -14,3 +14,9 @@
 /src/examples/
 /commitlint.config.js
 /test-data/
+*.test.js
+*.test.js.map
+*.test.d.ts
+*.test.d.ts.map
+/eslint.config.js
+/utils/

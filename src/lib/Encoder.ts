@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Angus.Fenying <fenying@litert.org>
+ * Copyright 2024 Angus.Fenying <fenying@litert.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +14,20 @@
  * limitations under the License.
  */
 
-import * as C from './Common';
-import * as E from './Errors';
+import type * as dL from './Common';
+import * as eL from './Errors';
+import * as cL from './Constants';
 
 interface IContext {
 
     buffer: Buffer;
 
     cursor: number;
-
-    autoString?: boolean;
 }
 
-const BYTE_COLON = 58;
-const BYTE_NEG = 45;
-const BYTE_0 = 48;
-const BYTE_9 = 58;
-const BYTE_LOWER_D = 100;
-const BYTE_LOWER_E = 101;
-const BYTE_LOWER_I = 105;
-const BYTE_LOWER_L = 108;
+export class BencodeEncoder implements dL.IEncoder {
 
-const EMPTY_STRING = Buffer.allocUnsafe(0);
-
-class BEncoder implements C.IEncoder {
-
-    public encode(data: C.ElementType): Buffer {
+    public encode(data: dL.IElementType): Buffer {
 
         const ctx: IContext = {
 
@@ -49,7 +37,7 @@ class BEncoder implements C.IEncoder {
 
         this._encode(ctx, data);
 
-        return ctx.buffer.slice(0, ctx.cursor);
+        return ctx.buffer.subarray(0, ctx.cursor);
     }
 
     private _autoExtendContextBuffer(
@@ -76,89 +64,95 @@ class BEncoder implements C.IEncoder {
         ctx.buffer = newBuffer;
     }
 
-    private _encode(ctx: IContext, data: C.ElementType): void {
+    private _encode(ctx: IContext, data: dL.IElementType): void {
 
         switch (typeof data) {
             case 'string':
 
-                return this._encodeString(ctx, data);
+                this._encodeString(ctx, data);
+                return;
 
             case 'number':
+            case 'bigint':
 
-                return this._encodeNumber(ctx, data);
+                this._encodeNumber(ctx, data);
+                return;
 
             case 'object':
 
                 if (data instanceof Buffer) {
 
-                    return this._encodeString(ctx, data);
+                    this._encodeString(ctx, data);
+                    return;
                 }
                 else if (Array.isArray(data)) {
 
-                    return this._encodeList(ctx, data);
+                    this._encodeList(ctx, data);
+                    return;
                 }
 
-                return this._encodeDict(ctx, data);
+                this._encodeDict(ctx, data);
+                return;
 
             default:
 
-                throw new E.E_UNSUPPORTED_DATA_TYPE({ data });
+                throw new eL.E_UNSUPPORTED_DATA_TYPE({ data });
         }
     }
 
-    private _encodeNumber(ctx: IContext, num: number): void {
+    private _encodeNumber(ctx: IContext, num: number | bigint): void {
 
-        if (!Number.isInteger(num)) {
+        if (!Number.isInteger(num) && typeof num !== 'bigint') {
 
-            throw new E.E_INVALID_INTEGER({ 'integer': num });
+            throw new eL.E_INVALID_INTEGER({ 'integer': num });
         }
 
-        const ns = num.toString();
-        const nsl = ns.length;
-        const expLen = nsl + 2;
+        const digitQty = num.toString();
+        const digitQtyStrLen = digitQty.length;
+        const encodedLength = digitQtyStrLen + 2; // 'i' + num + 'e'
 
-        this._autoExtendContextBuffer(ctx, expLen);
+        this._autoExtendContextBuffer(ctx, encodedLength);
 
-        ctx.buffer[ctx.cursor] = BYTE_LOWER_I;
+        ctx.buffer[ctx.cursor] = cL.ECharCodes.LOWER_I;
 
-        ctx.buffer.write(ns, ctx.cursor + 1);
+        ctx.buffer.write(digitQty, ctx.cursor + 1);
 
-        ctx.buffer[ctx.cursor + 1 + nsl] = BYTE_LOWER_E;
+        ctx.buffer[ctx.cursor + 1 + digitQtyStrLen] = cL.ECharCodes.LOWER_E;
 
-        ctx.cursor += expLen;
+        ctx.cursor += encodedLength;
     }
 
-    private _encodeString(ctx: IContext, s: string | Buffer): void {
+    private _encodeString(ctx: IContext, str: string | Buffer): void {
 
-        const bl = Buffer.byteLength(s);
-        const bls = bl.toString();
-        const expLen = bls.length + 1 + bl;
+        const bytesQty = Buffer.byteLength(str);
+        const bytesQtyStrLen = bytesQty.toString();
+        const encodedLength = bytesQtyStrLen.length + 1 + bytesQty; // bytesQty + ':' + str
 
-        this._autoExtendContextBuffer(ctx, expLen);
+        this._autoExtendContextBuffer(ctx, encodedLength);
 
-        ctx.buffer.write(bls, ctx.cursor);
-        ctx.buffer[ctx.cursor + bls.length] = BYTE_COLON;
+        ctx.buffer.write(bytesQtyStrLen, ctx.cursor);
+        ctx.buffer[ctx.cursor + bytesQtyStrLen.length] = cL.ECharCodes.COLON;
 
-        if (bl) {
+        if (bytesQty) {
 
-            if (s instanceof Buffer) {
+            if (str instanceof Buffer) {
 
-                s.copy(ctx.buffer, ctx.cursor + bls.length + 1);
+                str.copy(ctx.buffer, ctx.cursor + bytesQtyStrLen.length + 1);
             }
             else {
 
-                ctx.buffer.write(s, ctx.cursor + bls.length + 1);
+                ctx.buffer.write(str, ctx.cursor + bytesQtyStrLen.length + 1);
             }
         }
 
-        ctx.cursor += expLen;
+        ctx.cursor += encodedLength;
     }
 
     private _encodeDict(ctx: IContext, dict: Record<string, any>): void {
 
         this._autoExtendContextBuffer(ctx, 2);
 
-        ctx.buffer[ctx.cursor++] = BYTE_LOWER_D;
+        ctx.buffer[ctx.cursor++] = cL.ECharCodes.LOWER_D;
 
         for (const key in dict) {
 
@@ -166,214 +160,20 @@ class BEncoder implements C.IEncoder {
             this._encode(ctx, dict[key]);
         }
 
-        ctx.buffer[ctx.cursor++] = BYTE_LOWER_E;
+        ctx.buffer[ctx.cursor++] = cL.ECharCodes.LOWER_E;
     }
 
     private _encodeList(ctx: IContext, list: any[]): void {
 
         this._autoExtendContextBuffer(ctx, 2);
 
-        ctx.buffer[ctx.cursor++] = BYTE_LOWER_L;
+        ctx.buffer[ctx.cursor++] = cL.ECharCodes.LOWER_L;
 
         for (const item of list) {
 
             this._encode(ctx, item);
         }
 
-        ctx.buffer[ctx.cursor++] = BYTE_LOWER_E;
+        ctx.buffer[ctx.cursor++] = cL.ECharCodes.LOWER_E;
     }
-
-    public decode(
-        data: string | Buffer,
-        autoString: boolean = false
-    ): C.ElementType {
-
-        const context: IContext = {
-
-            'buffer': data instanceof Buffer ? data : Buffer.from(data),
-            'cursor': 0,
-            autoString
-        };
-
-        return this._decode(context);
-    }
-
-    private _decode(ctx: IContext): C.ElementType {
-
-        switch (ctx.buffer[ctx.cursor]) {
-            case BYTE_LOWER_D:
-
-                return this._decodeDict(ctx);
-
-            case BYTE_LOWER_I:
-
-                return this._decodeInteger(ctx);
-
-            case BYTE_LOWER_L:
-
-                return this._decodeList(ctx);
-
-            default:
-
-                return this._decodeString(ctx);
-        }
-    }
-
-    private _decodeInteger(ctx: IContext): number {
-
-        const endPos = ctx.buffer.indexOf(BYTE_LOWER_E, ctx.cursor);
-
-        if (endPos === -1) {
-
-            throw new E.E_UNEXPECTED_ENDING({ 'position': ctx.cursor });
-        }
-
-        let i = ctx.cursor + 1;
-        let sign = 1;
-        let val = 0;
-
-        if (ctx.buffer[ctx.cursor + 1] === BYTE_NEG) {
-
-            i++;
-            sign = -1;
-        }
-
-        if (i === endPos) {
-
-            throw new E.E_INVALID_INTEGER({ 'position': ctx.cursor });
-        }
-
-        for (; i < endPos; i++) {
-
-            const b = ctx.buffer[i];
-
-            if (b < BYTE_0 || b > BYTE_9) {
-
-                throw new E.E_INVALID_INTEGER({ 'position': i });
-            }
-
-            val = val * 10 + b - BYTE_0;
-        }
-
-        ctx.cursor = endPos + 1;
-
-        return val * sign;
-    }
-
-    private _decodeList(ctx: IContext): any[] {
-
-        let ret: any[] = [];
-
-        ctx.cursor++;
-
-        while (1) {
-
-            if (ctx.buffer[ctx.cursor] === undefined) {
-
-                throw new E.E_UNEXPECTED_ENDING({ 'position': ctx.cursor });
-            }
-
-            if (ctx.buffer[ctx.cursor] === BYTE_LOWER_E) {
-
-                ctx.cursor++;
-                break;
-            }
-
-            ret.push(this._decode(ctx));
-        }
-
-        return ret;
-    }
-
-    private _decodeDict(ctx: IContext): Record<string, any> {
-
-        let ret: Record<string, any> = {};
-        ctx.cursor++;
-
-        while (1) {
-
-            if (ctx.buffer[ctx.cursor] === undefined) {
-
-                throw new E.E_UNEXPECTED_ENDING({ 'position': ctx.cursor });
-            }
-
-            if (ctx.buffer[ctx.cursor] === BYTE_LOWER_E) {
-
-                ctx.cursor++;
-                break;
-            }
-
-            ret[this._decodeString(ctx).toString()] = this._decode(ctx);
-        }
-
-        return ret;
-    }
-
-    private _decodeString(ctx: IContext): string | Buffer {
-
-        let len: number = 0;
-
-        let i = ctx.cursor;
-
-        if (ctx.buffer[ctx.cursor] < BYTE_0 || ctx.buffer[ctx.cursor] > BYTE_9) {
-
-            throw new E.E_INVALID_STRING_LENGTH({ 'position': i });
-        }
-
-        while (1) {
-
-            const b = ctx.buffer[i];
-
-            if (b === undefined) {
-
-                throw new E.E_UNEXPECTED_ENDING({ 'position': i });
-            }
-
-            if (b === BYTE_COLON) {
-
-                ctx.cursor = i + 1;
-                break;
-            }
-
-            if (b < BYTE_0 || b > BYTE_9) {
-
-                throw new E.E_INVALID_STRING_LENGTH({ 'position': i });
-            }
-
-            len = len * 10 + b - BYTE_0;
-
-            i++;
-        }
-
-        let ret: string | Buffer = EMPTY_STRING;
-
-        if (len) {
-
-            if (ctx.buffer.length - ctx.cursor < len) {
-
-                throw new E.E_UNEXPECTED_ENDING({ 'position': i });
-            }
-
-            ret = ctx.buffer.slice(ctx.cursor, ctx.cursor + len);
-
-            if (ctx.autoString) {
-
-                const t = ret.toString('utf8');
-
-                if (Buffer.from(t).length === ret.length) {
-
-                    ret = t;
-                }
-            }
-
-            ctx.cursor += len;
-        }
-
-        return ret;
-    }
-}
-
-export function createBEncoder(): C.IEncoder {
-
-    return new BEncoder();
 }

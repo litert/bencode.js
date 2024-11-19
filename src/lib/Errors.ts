@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Angus.Fenying <fenying@litert.org>
+ * Copyright 2024 Angus.Fenying <fenying@litert.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,48 +14,87 @@
  * limitations under the License.
  */
 
-import * as $Exceptions from '@litert/exception';
+/**
+ * The error class for bencode.
+ */
+export abstract class BencodeError extends Error {
 
-export const exceptionRegistry = $Exceptions.createExceptionRegistry({
-    'module': 'bencode.litert.org',
-    'types': {
-        'bencode': {
-            index: $Exceptions.createIncreaseCodeIndex(0)
-        }
+    public constructor(
+        /**
+         * The name of the error.
+         */
+        name: string,
+        /**
+         * The message of the error.
+         */
+        message: string,
+
+        /**
+         * The context of the error.
+         */
+        public readonly context: Record<string, unknown>,
+
+        /**
+         * The origin of the error.
+         */
+        public readonly origin: unknown
+    ) {
+
+        super(message);
+        this.name = name;
     }
-});
+}
 
-export const E_INVALID_INTEGER = exceptionRegistry.register({
-    name: 'invalid_integer',
-    message: 'The integer to be encoded/decoded is invalid.',
-    metadata: {},
-    type: 'bencode'
-});
+/* eslint-disable @typescript-eslint/naming-convention */
 
-export const E_UNSUPPORTED_DATA_TYPE = exceptionRegistry.register({
-    name: 'unsupported_data_type',
-    message: 'The type of data can not be encoded/decoded.',
-    metadata: {},
-    type: 'bencode'
-});
+export class E_INVALID_INTEGER extends BencodeError {
 
-export const E_UNEXPECTED_ENDING = exceptionRegistry.register({
-    name: 'unexpected_ending',
-    message: 'The data to be decoded is not ended correctly.',
-    metadata: {},
-    type: 'bencode'
-});
+    public constructor(context: Record<string, unknown> = {}, origin: unknown = null) {
 
-export const E_EXPECTED_KEY_IN_DICT = exceptionRegistry.register({
-    name: 'expected_key_in_dict',
-    message: 'Missing a key in a dictionary.',
-    metadata: {},
-    type: 'bencode'
-});
+        super(
+            'invalid_integer',
+            'The integer to be encoded/decoded is invalid.',
+            context,
+            origin,
+        );
+    }
+}
 
-export const E_INVALID_STRING_LENGTH = exceptionRegistry.register({
-    name: 'invalid_string_length',
-    message: 'An invalid charactor found in the length of a string.',
-    metadata: {},
-    type: 'bencode'
-});
+export class E_UNSUPPORTED_DATA_TYPE extends BencodeError {
+
+    public constructor(context: Record<string, unknown> = {}, origin: unknown = null) {
+
+        super(
+            'unsupported_data_type',
+            'The type of data can not be encoded/decoded.',
+            context,
+            origin,
+        );
+    }
+}
+
+export class E_UNEXPECTED_ENDING extends BencodeError {
+
+    public constructor(context: Record<string, unknown> = {}, origin: unknown = null) {
+
+        super(
+            'unexpected_ending',
+            'The data to be decoded is not ended correctly.',
+            context,
+            origin,
+        );
+    }
+}
+
+export class E_INVALID_STRING_LENGTH extends BencodeError {
+
+    public constructor(context: Record<string, unknown> = {}, origin: unknown = null) {
+
+        super(
+            'invalid_string_length',
+            'An invalid character found in the length of a string.',
+            context,
+            origin,
+        );
+    }
+}

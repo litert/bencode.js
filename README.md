@@ -21,12 +21,14 @@ npm i @litert/bencode --save
 
 ## Usage
 
+Encoding:
+
 ```ts
 import * as libBencode from "@litert/bencode";
 
-const be = libBEncode.createBEncoder();
+const enc = new libBEncode.BencodeEncoder();
 
-const beData = be.encode({ // Encode data into BEncode.
+const beData = enc.encode({ // Encode data into BEncode.
     "name": "Angus",
     "age": 18,
     "friends": [
@@ -36,38 +38,25 @@ const beData = be.encode({ // Encode data into BEncode.
     "scores": {
         "math": 87
     },
-    "randomBytes": Buffer.allocUnsafe(32)
+    "randomBytes": Buffer.from('vsm/GvyGjZqUeuPa7ZP8h9ot8VRCe/6arpboI46EIlg=', 'base64')
 });
 
 /**
- * Don't print as a UTF-8 string, becuase it's binary.
+ * Don't print as a UTF-8 string, because it's binary.
  */
 console.log(beData);
+```
 
-/**
- * Print Buffer in BASE64 format in JSON.
- */
-function buffer4Base64(k: string, v: any): any {
+Decoding:
 
-    if (typeof v === "object" && "data" in v && v.type === "Buffer") {
+```ts
+import * as libBencode from "@litert/bencode";
 
-        return Buffer.from(v.data).toString("base64");
-    }
+const dec = new LibBencode.BencodeDecoder();
 
-    return v;
-}
+const beData = dec.decode('d4:name5:Angus7:friendsld4:name5:Editheee');
 
-/**
- * Print the decoded object as JSON.
- *
- * The second argument of decode will transform a Buffer into string, if it's
- * a UTF-8 string.
- */
-console.log(JSON.stringify(
-    be.decode(beData, true),
-    buffer4Base64,
-    2
-));
+console.log(beData); // Output: { name: 'Angus', friends: [ { name: 'Edith' } ] }
 ```
 
 ## License

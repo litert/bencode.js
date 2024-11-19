@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Angus.Fenying <fenying@litert.org>
+ * Copyright 2024 Angus.Fenying <fenying@litert.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 // tslint:disable: no-console
-import * as $BEncode from '../lib';
+import * as LibBencode from '../lib';
 
 function buffer4Base64(k: string, v: any): any {
 
@@ -27,9 +27,10 @@ function buffer4Base64(k: string, v: any): any {
     return v;
 }
 
-const be = $BEncode.createBEncoder();
+const enc = new LibBencode.BencodeEncoder();
+const dec = new LibBencode.BencodeDecoder();
 
-const beData = be.encode({
+const beData = enc.encode({
     'name': 'Angus',
     'age': 18,
     'friends': [
@@ -39,13 +40,13 @@ const beData = be.encode({
     'scores': {
         'math': 87
     },
-    'randomBytes': Buffer.allocUnsafe(32)
+    'randomBytes': Buffer.from('vsm/GvyGjZqUeuPa7ZP8h9ot8VRCe/6arpboI46EIlg=', 'base64')
 });
 
 console.log(beData.toString());
 
 console.log(JSON.stringify(
-    be.decode(beData, true),
+    dec.decode(beData),
     buffer4Base64,
     2
 ));

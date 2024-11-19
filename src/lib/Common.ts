@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Angus.Fenying <fenying@litert.org>
+ * Copyright 2024 Angus.Fenying <fenying@litert.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export type ElementType = number | Buffer | string | any[] | Record<string, any>;
+export type IElementType = bigint | number | Buffer | string | any[] | Record<string, any>;
 
 export interface IEncoder {
 
@@ -23,17 +23,33 @@ export interface IEncoder {
      *
      * @param data The data to be encoded.
      */
-    encode(data: ElementType): Buffer;
+    encode(data: IElementType): Buffer;
+}
+
+export interface IDecodeOptions {
 
     /**
-     * Decode data from a BEncode string.
+     * Always return string as buffer.
+     *
+     * @default false
+     */
+    'stringAsBuffer'?: boolean;
+
+    /**
+     * The maximum length of data could to be decoded as string.
+     *
+     * @default 65536 (64 KiB)
+     */
+    'maxStringLength'?: number;
+}
+
+export interface IDecoder {
+
+    /**
+     * Decode data from a BEncode (binary) string.
      *
      * @param data          The BEncode string to be decoded.
-     * @param autoString    Set to true if you want UTF-8 strings instead of Buffer,
-     *                      when it's a UTF-8 string.
+     * @param opts          The options for decoding.
      */
-    decode(
-        data: string | Buffer,
-        autoString?: boolean
-    ): ElementType;
+    decode(data: string | Buffer, opts?: IDecodeOptions): IElementType;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@litert/bencode",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A bencode decode/encode library based on Node.js.",
   "main": "./libs/index.js",
   "scripts": {
@@ -8,10 +8,10 @@
     "build": "echo Using TypeScript && tsc -v && tsc -p .",
     "build-watch": "echo Using TypeScript && tsc -v && tsc -w -p .",
     "rebuild": "npm run clean && npm run lint && npm run build",
-    "test": "echo See directory src/examples",
+    "test": "li-test lib",
     "clean": "rm -rf lib test examples",
     "typecheck": "tsc -p . --noEmit",
-    "lint": "eslint --ext ts src"
+    "lint": "./utils/eslint.sh"
   },
   "keywords": [
     "litert",
@@ -32,19 +32,15 @@
   "types": "./libs/index.d.ts",
   "typings": "./libs/index.d.ts",
   "devDependencies": {
-    "@commitlint/cli": "^12.1.4",
-    "@commitlint/config-conventional": "^12.1.4",
-    "@types/node": "^15.12.2",
-    "@typescript-eslint/eslint-plugin": "^4.27.0",
-    "@typescript-eslint/parser": "^4.27.0",
-    "eslint": "^7.28.0",
-    "husky": "^6.0.0",
-    "typescript": "^4.3.3"
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
+    "@litert/eslint-plugin-rules": "^0.2.4",
+    "@litert/test-cli": "^0.1.1",
+    "@types/node": "^22.5.1",
+    "husky": "^9.1.5",
+    "typescript": "^5.6.3"
   },
   "engines": {
-    "node": ">=10.0.0"
-  },
-  "dependencies": {
-    "@litert/exception": "^1.1.1"
+    "node": ">=16.0.0"
   }
 }
